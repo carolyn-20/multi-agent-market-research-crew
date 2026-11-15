@@ -31,8 +31,9 @@ def main(argv=None) -> int:
         from crew.demo import run_offline
         report_md = run_offline(args.query, out, bench)
     else:
-        if not os.getenv("OPENAI_API_KEY"):
-            sys.exit("OPENAI_API_KEY is missing. Copy .env.example to .env, or use --offline.")
+        from crew.config import api_key
+        if not api_key():
+            sys.exit("GROQ_API_KEY is missing. Copy .env.example to .env, or use --offline.")
         from crew.crew import build_crew
         result = build_crew(args.query, bench).kickoff()
         report_md = getattr(result, "raw", None) or str(result)

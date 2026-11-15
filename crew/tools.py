@@ -21,6 +21,10 @@ except ImportError:  # older releases, as shown in the project brief
             return arg if callable(arg) else (lambda fn: fn)
 
 REQUEST_TIMEOUT = 15
+# Small caps keep tool output (and every later prompt that carries it) token-cheap.
+MAX_RESULTS = int(os.getenv("SCRAPE_RESULTS", "3"))
+MAX_CHARS_PER_PAGE = int(os.getenv("SCRAPE_CHARS", "900"))
+MAX_TOTAL_CHARS = int(os.getenv("SCRAPE_TOTAL_CHARS", "3000"))
 USER_AGENT = "Mozilla/5.0 (compatible; MarketResearchCrew/1.0)"
 
 
@@ -54,7 +58,7 @@ def search_web(query: str, max_results: int = 5) -> list[dict]:
     raise RuntimeError("Set TAVILY_API_KEY or SERPER_API_KEY in your .env file.")
 
 
-def extract_text(html: str, max_chars: int = 3000) -> str:
+def extract_text(html: str, max_chars: int = MAX_CHARS_PER_PAGE) -> str:
     """Strip scripts/styles/nav and collapse whitespace."""
     soup = BeautifulSoup(html, "html.parser")
     for tag in soup(["script", "style", "noscript", "nav", "footer", "header", "aside"]):
@@ -63,21 +67,21 @@ def extract_text(html: str, max_chars: int = 3000) -> str:
     return text[:max_chars]
 
 
-def scrape_url(url: str, max_chars: int = 3000) -> str:
+def scrape_url(url: str, max_chars: int = MAX_CHARS_PER_PAGE) -> str:
     resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=REQUEST_TIMEOUT)
     resp.raise_for_status()
     return extract_text(resp.text, max_chars)
 
 
-def search_and_scrape(query: str, max_results: int = 4) -> str:
+def search_and_scrape(query: str, max_results: int = MAX_RESULTS) -> str:
     blocks = []
     for hit in search_web(query, max_results):
         try:
             body = scrape_url(hit["url"])
         except Exception:  # fall back to the search snippet if the page can't be fetched
-            body = hit["snippet"]
+            body = hit["snippet"][:MAX_CHARS_PER_PAGE]
         blocks.append(f"### {hit['title']}\nURL: {hit['url']}\n{body}")
-    return "\n\n".join(blocks) or "No results found."
+    return ("\n\n".join(blocks) or "No results found.")[:MAX_TOTAL_CHARS]
 
 
 @tool("Web Search and Scrape")

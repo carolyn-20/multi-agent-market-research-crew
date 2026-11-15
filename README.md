@@ -24,7 +24,7 @@ sample_outputs/         sample market_report.md / .pdf / metrics.csv / benchmark
 
 1. `python -m venv .venv && source .venv/bin/activate`
 2. `pip install -r requirements.txt`
-3. Configure keys: `cp .env.example .env`, then set `OPENAI_API_KEY` and `TAVILY_API_KEY`
+3. Configure keys: `cp .env.example .env`, then set `GROQ_API_KEY` and `TAVILY_API_KEY`
    (or `SERPER_API_KEY` as a fallback search provider). `.env` is git-ignored.
 4. Run the app: `python main.py --query 'Tech Sector Q3 Analysis'`
 5. Run tests: `pytest`
@@ -51,6 +51,10 @@ completions) and `routing_history` (tool calls, agent steps and task completions
 
 ## Notes
 - Tasks are deliberately created without an assigned agent so the manager LLM routes them.
-- Models default to `gpt-4o` (manager) and `gpt-4o-mini` (workers); override in `.env`.
+- LLM: Groq `openai/gpt-oss-120b` for manager and workers (one shared `LLM`, see `crew/config.py`).
+  Override `LLM_MODEL`, `LLM_BASE_URL`, `LLM_API_KEY` in `.env` to use another provider.
+- Token savers (Groq free tier = 8,000 tokens/min): `reasoning_effort=low`, `max_tokens=1500`
+  (Groq counts it toward the per-minute budget), `max_rpm=6`, short prompts, one search, and
+  scraper output capped at ~3,000 characters. Tune via `.env`.
 - Tested against CrewAI 1.15 (crew construction) and with pytest both with and without CrewAI installed.
   The live LLM run needs your own API keys and was not executed here.

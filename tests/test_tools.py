@@ -38,3 +38,17 @@ def test_write_metrics_csv_validates(tmp_path, monkeypatch):
     assert path.endswith("metrics.csv") and (tmp_path / "metrics.csv").exists()
     with pytest.raises(ValueError):
         tools.write_metrics_csv("a,b\nx,y")
+
+
+def test_scraper_output_is_capped(monkeypatch):
+    monkeypatch.setenv("TAVILY_API_KEY", "k")
+    big = "word " * 5000
+
+    class Resp:
+        def raise_for_status(self): pass
+        def json(self):
+            return {"results": [{"title": f"T{i}", "url": f"http://x{i}", "content": big} for i in range(5)]}
+
+    monkeypatch.setattr(tools.requests, "post", lambda *a, **k: Resp())
+    monkeypatch.setattr(tools, "scrape_url", lambda url, **k: big)
+    assert len(tools.search_and_scrape("q")) <= tools.MAX_TOTAL_CHARS

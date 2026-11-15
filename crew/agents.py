@@ -1,29 +1,23 @@
-"""The three worker agents. Delegation is handled by the hierarchical manager."""
+"""The three worker agents (short prompts on purpose: fewer tokens per call)."""
 from crewai import Agent
 
-from .config import WORKER_MODEL
+from .config import get_llm
 from .tools import calculate_financial_metrics, save_metrics_csv, web_scraper
 
 
-def build_agents() -> dict[str, Agent]:
-    researcher = Agent(
-        role="Market Researcher",
-        goal="Find current, credible data and news about the requested market topic.",
-        backstory="A veteran equity researcher who cross-checks sources and extracts hard numbers.",
-        tools=[web_scraper, save_metrics_csv],
-        llm=WORKER_MODEL, allow_delegation=False, verbose=True,
-    )
-    analyst = Agent(
-        role="Financial Analyst",
-        goal="Turn the collected metrics into verified statistics and clear insights.",
-        backstory="A quantitative analyst who never reports a number the data does not support.",
-        tools=[calculate_financial_metrics],
-        llm=WORKER_MODEL, allow_delegation=False, verbose=True,
-    )
-    writer = Agent(
-        role="Content Writer",
-        goal="Write a polished, well-structured market report in Markdown.",
-        backstory="A business journalist who writes crisp executive-ready reports.",
-        llm=WORKER_MODEL, allow_delegation=False, verbose=True,
-    )
-    return {"researcher": researcher, "analyst": analyst, "writer": writer}
+def build_agents(llm=None) -> dict[str, Agent]:
+    llm = llm or get_llm()
+    common = dict(llm=llm, allow_delegation=False, verbose=True, max_iter=4)
+    return {
+        "researcher": Agent(role="Market Researcher",
+                            goal="Find credible recent data on the topic.",
+                            backstory="Equity researcher who extracts hard numbers.",
+                            tools=[web_scraper, save_metrics_csv], **common),
+        "analyst": Agent(role="Financial Analyst",
+                         goal="Compute statistics and give concise insights.",
+                         backstory="Quant analyst; reports only supported numbers.",
+                         tools=[calculate_financial_metrics], **common),
+        "writer": Agent(role="Content Writer",
+                        goal="Write a concise Markdown market report.",
+                        backstory="Business journalist.", **common),
+    }
