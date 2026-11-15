@@ -1,0 +1,81 @@
+{
+  "runs": [
+    {
+      "query": "Tech Sector Q3 Analysis",
+      "started_at": "2026-11-15T06:55:36.800329+00:00",
+      "total_seconds": 0.038,
+      "tasks": [
+        {
+          "task": "Research",
+          "agent": "Market Researcher (offline)",
+          "seconds": 0.0
+        },
+        {
+          "task": "Analysis",
+          "agent": "Financial Analyst (offline)",
+          "seconds": 0.016
+        },
+        {
+          "task": "Writing",
+          "agent": "Content Writer (offline)",
+          "seconds": 0.0
+        },
+        {
+          "task": "PDF compilation",
+          "agent": "report compiler",
+          "seconds": 0.013
+        }
+      ],
+      "routing_history": [
+        {
+          "t": 0.0,
+          "event": "task_started",
+          "task": "Research",
+          "agent": "Market Researcher (offline)"
+        },
+        {
+          "t": 0.001,
+          "event": "task_completed",
+          "task": "Research",
+          "agent": "Market Researcher (offline)"
+        },
+        {
+          "t": 0.001,
+          "event": "task_started",
+          "task": "Analysis",
+          "agent": "Financial Analyst (offline)"
+        },
+        {
+          "t": 0.017,
+          "event": "task_completed",
+          "task": "Analysis",
+          "agent": "Financial Analyst (offline)"
+        },
+        {
+          "t": 0.017,
+          "event": "task_started",
+          "task": "Writing",
+          "agent": "Content Writer (offline)"
+        },
+        {
+          "t": 0.017,
+          "event": "task_completed",
+          "task": "Writing",
+          "agent": "Content Writer (offline)"
+        },
+        {
+          "t": 0.026,
+          "event": "task_started",
+          "task": "PDF compilation",
+          "agent": "report compiler"
+        },
+        {
+          "t": 0.038,
+          "event": "task_completed",
+          "task": "PDF compilation",
+          "agent": "report compiler"
+        }
+      ]
+    }
+  ]
+}
